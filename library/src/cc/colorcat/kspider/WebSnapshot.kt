@@ -7,7 +7,7 @@ import java.nio.charset.Charset
  * Created by cxx on 18-1-31.
  * xx.ch@outlook.com
  */
-class WebSnapshot private constructor(val uri: URI, val charset: Charset, val resource: String?) {
+class WebSnapshot private constructor(val uri: URI, private val charset: Charset, val resource: String?) {
     companion object {
         fun newWebSnapshot(uri: URI, charset: Charset, resource: String? = null) = WebSnapshot(uri, charset, resource)
     }

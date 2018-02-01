@@ -39,9 +39,12 @@ internal class RealCall(override val seed: Seed, private val spider: KSpider) : 
 
     @Throws(IOException::class)
     private fun getScrapsWithInterceptorChain(): List<Scrap> {
-        //todo
         val users = spider.interceptors
         val interceptors = mutableListWith<Interceptor>(users.size + 3)
+        interceptors.add(SeedsCleanerInterceptor(spider))
+        interceptors.add(HandlerInterceptor(spider))
+        interceptors.addAll(users)
+        interceptors.add(ConnectionInterceptor())
         val chain = RealInterceptorChain(seed, spider.connection, spider.parser, interceptors, 0)
         return chain.proceed(seed)
     }

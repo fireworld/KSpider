@@ -4,6 +4,10 @@ import cc.colorcat.kspider.EventListener
 import cc.colorcat.kspider.Scrap
 import cc.colorcat.kspider.Seed
 import cc.colorcat.kspider.SeedJar
+import java.io.Closeable
+import java.io.IOException
+import java.net.URI
+import java.nio.charset.Charset
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.LinkedBlockingDeque
@@ -74,3 +78,27 @@ internal val emptySeedJar: SeedJar by lazy {
         override fun load(): List<Seed> = emptyList()
     }
 }
+
+internal fun close(closeable: Closeable?) {
+    if (closeable != null) {
+        try {
+            closeable.close()
+        } catch (ignore: IOException) {
+        }
+    }
+}
+
+internal fun parseCharset(contentType: String?, charsetIfAbsent: Charset): Charset {
+    return contentType
+            ?.split(";")
+            ?.map { it.trim().split("=") }
+            ?.filter { it.size == 2 && "charset".equals(it[0], true) }
+            ?.let { if (it.isEmpty()) null else Charset.forName(it[0][1]) }
+            ?: charsetIfAbsent
+}
+
+internal fun isHttpUrl(uri: URI): Boolean {
+    val scheme = uri.scheme
+    return scheme != null && scheme.toLowerCase().matches("(http)(s)?".toRegex())
+}
+
