@@ -28,12 +28,33 @@ class KSpider internal constructor(builder: Builder) : Call.Factory {
         dispatcher.setSpider(this)
     }
 
-    override fun newCall(seed: Seed): Call {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun newCall(seed: Seed): Call = RealCall(seed, this)
+
+    fun start(tag: String, uri: String) {
+        mapAndEnqueue(listOf(Seed.Companion.newSeed(tag, uri)))
+    }
+
+    fun start(tag: String, uris: List<String>, defaultData: Map<String, String> = emptyMap()) {
+        val seeds = Seed.newSeeds(tag, uris, 0, defaultData)
+        mapAndEnqueue(seeds)
+    }
+
+    fun start(seeds: List<Seed>) {
+        mapAndEnqueue(seeds)
+    }
+
+    fun startWithSeedJar() {
+        mapAndEnqueue(seedJar.load())
+    }
+
+    fun startWithSeedJar(seeds: List<Seed>) {
+        val all = seeds + seedJar.load()
+        mapAndEnqueue(all)
     }
 
     internal fun mapAndEnqueue(seeds: List<Seed>) {
-
+        val calls = seeds.map { newCall(it) }
+        dispatcher.enqueue(calls, depthFirst)
     }
 
     fun newBuilder(): Builder = Builder(this)
@@ -66,7 +87,7 @@ class KSpider internal constructor(builder: Builder) : Call.Factory {
             handlers = mutableMapOf()
             interceptors = mutableListOf()
             parsers = mutableListOf()
-            connection = HttpConnection()
+            connection = HttpConnection(Charsets.UTF_8)
             executor = defaultService()
             dispatcher = Dispatcher()
             depthFirst = false

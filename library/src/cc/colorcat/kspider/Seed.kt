@@ -8,12 +8,25 @@ import java.net.URI
  * Created by cxx on 18-1-31.
  * xx.ch@outlook.com
  */
-open class Seed internal constructor(
+open class Seed private constructor(
         val tag: String,
         val uri: URI,
         val depth: Int,
         data: Map<String, String>
 ) {
+    companion object {
+        @JvmStatic
+        fun newSeeds(tag: String, uris: List<String>, depth: Int = 0, data: Map<String, String> = emptyMap()): List<Seed> {
+            return uris.map { newSeed(tag, it, depth, data) }
+        }
+
+        @JvmStatic
+        fun newSeed(tag: String, uri: String, depth: Int = 0, data: Map<String, String> = emptyMap()) = Seed(tag, URI.create(uri), depth, data)
+
+        @JvmStatic
+        fun newSeed(tag: String, uri: URI, depth: Int = 0, data: Map<String, String> = emptyMap()) = Seed(tag, uri, depth, data)
+    }
+
     private val _data: MutableMap<String, String> = HashMap(data)
 
     val data
