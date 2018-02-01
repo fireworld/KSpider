@@ -7,26 +7,22 @@ import java.util.concurrent.ExecutorService
  * Created by cxx on 2018/2/1.
  * xx.ch@outlook.com
  */
-class KSpider internal constructor(builder: Builder) : Call.Factory {
-    val handlers: Map<String, List<Handler>> = builder.handlers.toImmutableMap()
-    val interceptors: List<Interceptor> = builder.interceptors.toImmutableList()
-    val parsers: List<Parser> = builder.parsers.toImmutableList()
+class KSpider private constructor(builder: Builder) : Call.Factory {
+    val handlers: Map<String, List<Handler>> = builder.handlers
+    val interceptors: List<Interceptor> = builder.interceptors
+    val parsers: List<Parser> = builder.parsers
     internal val parser: Parser = ParserProxy(parsers)
-    private val _connection = builder.connection
+    private val _connection: Connection = builder.connection
     val connection: Connection
         get() = _connection.clone()
     val executor: ExecutorService = builder.executor
-    internal val dispatcher: Dispatcher = builder.dispatcher
     val depthFirst: Boolean = builder.depthFirst
     val maxRetry: Int = builder.maxRetry
     val maxSeedOnRunning: Int = builder.maxSeedOnRunning
     val maxDepth: Int = builder.maxDepth
-    val listener: EventListener = builder.listener
+    val eventListener: EventListener = builder.eventListener
     val seedJar: SeedJar = builder.seedJar
-
-    init {
-        dispatcher.setSpider(this)
-    }
+    internal val dispatcher: Dispatcher = Dispatcher(this)
 
     override fun newCall(seed: Seed): Call = RealCall(seed, this)
 
@@ -61,86 +57,87 @@ class KSpider internal constructor(builder: Builder) : Call.Factory {
 
 
     class Builder {
-        internal val handlers: MutableMap<String, MutableList<Handler>>
-        internal val interceptors: MutableList<Interceptor>
-        internal val parsers: MutableList<Parser>
-        internal var connection: Connection
+        private val _handlers: MutableMap<String, MutableList<Handler>>
+        private val _interceptors: MutableList<Interceptor>
+        private val _parsers: MutableList<Parser>
+        val handlers: Map<String, List<Handler>>
+            get() = _handlers.toImmutableMap()
+        val interceptors: List<Interceptor>
+            get() = _interceptors.toImmutableList()
+        val parsers: List<Parser>
+            get() = _parsers.toImmutableList()
+        var connection: Connection
             private set
-        internal var executor: ExecutorService
+        var executor: ExecutorService
             private set
-        internal var dispatcher: Dispatcher
+        var depthFirst: Boolean
             private set
-        internal var depthFirst: Boolean
+        var maxRetry: Int
             private set
-        internal var maxRetry: Int
+        var maxSeedOnRunning: Int
             private set
-        internal var maxSeedOnRunning: Int
+        var maxDepth: Int
             private set
-        internal var maxDepth: Int
+        var eventListener: EventListener
             private set
-        internal var listener: EventListener
-            private set
-        internal var seedJar: SeedJar
+        var seedJar: SeedJar
             private set
 
         constructor() {
-            handlers = mutableMapOf()
-            interceptors = mutableListOf()
-            parsers = mutableListOf()
+            _handlers = mutableMapOf()
+            _interceptors = mutableListOf()
+            _parsers = mutableListOf()
             connection = HttpConnection(Charsets.UTF_8)
             executor = defaultService()
-            dispatcher = Dispatcher()
             depthFirst = false
             maxRetry = 3
             maxSeedOnRunning = 20
             maxDepth = 100
-            listener = emptyEventListener
+            eventListener = emptyEventListener
             seedJar = emptySeedJar
         }
 
         internal constructor(spider: KSpider) {
-            handlers = spider.handlers.toMutableMap()
-            interceptors = spider.interceptors.toMutableList()
-            parsers = spider.parsers.toMutableList()
+            _handlers = spider.handlers.toMutableMap()
+            _interceptors = spider.interceptors.toMutableList()
+            _parsers = spider.parsers.toMutableList()
             connection = spider._connection
             executor = spider.executor
-            dispatcher = spider.dispatcher
             depthFirst = spider.depthFirst
             maxRetry = spider.maxRetry
             maxSeedOnRunning = spider.maxSeedOnRunning
             maxDepth = spider.maxDepth
-            listener = spider.listener
+            eventListener = spider.eventListener
             seedJar = spider.seedJar
         }
 
         fun registerHandler(tag: String, handler: Handler): Builder {
-            val hs = this.handlers.computeIfAbsent(tag) { mutableListOf() }
-            hs.addIfAbsent(handler)
+            _handlers.computeIfAbsent(tag) { mutableListOf() }.addIfAbsent(handler)
             return this
         }
 
         fun removeHandler(tag: String, handler: Handler): Builder {
-            this.handlers[tag]?.remove(handler)
+            this._handlers[tag]?.remove(handler)
             return this
         }
 
         fun addInterceptor(interceptor: Interceptor): Builder {
-            this.interceptors.addIfAbsent(interceptor)
+            this._interceptors.addIfAbsent(interceptor)
             return this
         }
 
         fun removeInterceptor(interceptor: Interceptor): Builder {
-            this.interceptors.remove(interceptor)
+            this._interceptors.remove(interceptor)
             return this
         }
 
         fun addParser(parser: Parser): Builder {
-            this.parsers.addIfAbsent(parser)
+            this._parsers.addIfAbsent(parser)
             return this
         }
 
         fun removeParser(parser: Parser): Builder {
-            this.parsers.remove(parser)
+            this._parsers.remove(parser)
             return this
         }
 
@@ -178,7 +175,7 @@ class KSpider internal constructor(builder: Builder) : Call.Factory {
         }
 
         fun eventListener(listener: EventListener): Builder {
-            this.listener = listener
+            this.eventListener = listener
             return this
         }
 
@@ -189,4 +186,6 @@ class KSpider internal constructor(builder: Builder) : Call.Factory {
 
         fun build(): KSpider = KSpider(this)
     }
+
+
 }

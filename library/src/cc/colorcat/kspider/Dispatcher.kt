@@ -1,27 +1,23 @@
 package cc.colorcat.kspider
 
-import java.net.URI
 import java.util.*
 
 /**
  * Created by cxx on 2018/2/1.
  * xx.ch@outlook.com
  */
-internal class Dispatcher {
-    private lateinit var spider: KSpider
+internal class Dispatcher(private val spider: KSpider) {
     private val reachedMaxDepth = LinkedList<Seed>()
     private val finished = LinkedList<Call>()
     private val waiting = LinkedList<Call>()
     private val running = LinkedList<Call>()
 
     @Synchronized
-    internal fun setSpider(spider: KSpider) {
-        this.spider = spider
-    }
-
-    @Synchronized
     internal fun enqueue(calls: List<Call>, depthFirst: Boolean) {
-        val filters = calls.filter { !existsUri(it.seed.uri) }
+        val filters = calls.filter { call ->
+            val uri = call.seed.uri
+            running.none { uri == it.seed.uri } && waiting.none { uri == it.seed.uri } && finished.none { uri == it.seed.uri }
+        }
         if (depthFirst) {
             waiting.addAll(0, filters)
         } else {
@@ -47,9 +43,11 @@ internal class Dispatcher {
     }
 
     private fun onAllFinished() {
-        val group = finished.groupBy { if (it.retryCount > spider.maxRetry) "failed" else "success" }
-        val success = group["success"]?.map { it.seed } ?: emptyList()
-        val failed = group["failed"]?.map { it.seed } ?: emptyList()
+        val s = "success"
+        val f = "failed"
+        val group = finished.groupBy { if (it.retryCount > spider.maxRetry) f else s }
+        val success = group[s]?.map { it.seed } ?: emptyList()
+        val failed = group[f]?.map { it.seed } ?: emptyList()
         spider.seedJar.save(success, failed, reachedMaxDepth)
     }
 
@@ -60,7 +58,7 @@ internal class Dispatcher {
         if (reason == null) {
             finished.add(call) // successful
             promoteCalls()
-            spider.listener.onSuccess(seed)
+            spider.eventListener.onSuccess(seed)
         } else {
             call.incrementRetryCount()
             if (call.retryCount <= spider.maxRetry) {
@@ -68,21 +66,19 @@ internal class Dispatcher {
             } else {
                 finished.add(call) // failed
                 promoteCalls()
-                spider.listener.onFailure(seed, reason)
+                spider.eventListener.onFailure(seed, reason)
             }
         }
     }
 
     internal fun handled(scrap: Scrap) {
-        spider.listener.onHandled(scrap)
+        spider.eventListener.onHandled(scrap)
     }
 
     internal fun onReachedMaxDepth(seed: Seed) {
         synchronized(reachedMaxDepth) {
             reachedMaxDepth.add(seed)
         }
-        spider.listener.onReachedMaxDepth(seed)
+        spider.eventListener.onReachedMaxDepth(seed)
     }
-
-    private fun existsUri(uri: URI) = running.any { uri == it.seed.uri } || waiting.any { uri == it.seed.uri } || finished.any { uri == it.seed.uri }
 }
