@@ -5,5 +5,7 @@ package cc.colorcat.kspider
  * xx.ch@outlook.com
  */
 interface SeedJar {
+    fun save(success: List<Seed>, failed: List<Seed>, reachedMaxDepth: List<Seed>)
 
+    fun load(): List<Seed>
 }

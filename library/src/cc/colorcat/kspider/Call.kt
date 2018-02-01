@@ -5,11 +5,11 @@ package cc.colorcat.kspider
  * xx.ch@outlook.com
  */
 interface Call : Runnable {
+    val seed: Seed
+
     val retryCount: Int
 
     fun incrementRetryCount()
-
-    val seed: Seed
 
     fun execute()
 

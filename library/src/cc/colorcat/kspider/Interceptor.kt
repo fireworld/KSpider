@@ -11,11 +11,11 @@ interface Interceptor {
     fun intercept(chain: Chain): List<Scrap>
 
     interface Chain {
-        fun connection(): Connection
+        val seed: Seed
 
-        fun parser(): Parser
+        val connection: Connection
 
-        fun seed(): Seed
+        val parser: Parser
 
         @Throws(IOException::class)
         fun proceed(seed: Seed): List<Scrap>

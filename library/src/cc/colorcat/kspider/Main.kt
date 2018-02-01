@@ -1,15 +1,17 @@
 package cc.colorcat.kspider
 
-import java.net.URI
+import cc.colorcat.kspider.internal.mutableListWith
 
 /**
  * Created by cxx on 18-1-31.
  * xx.ch@outlook.com
  */
 fun main(args: Array<String>) {
-    val seed = Seed("img", URI.create("http://www.baidu.com"), 0, emptyMap())
-    val scrap = Scrap("img", URI.create("http://www.baidu.com"), 0, emptyMap())
-    println(seed)
-    println(scrap)
-    println(seed == scrap)
+    val ints = mutableListWith<Int>(100)
+    ints += 1..100
+    println(ints)
+    println("---------------------------------")
+    val group = ints.groupBy { if (it > 50) "greater" else "less" }
+    println(group["greater"])
+    println(group["less"])
 }

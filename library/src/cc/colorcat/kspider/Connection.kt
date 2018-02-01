@@ -11,5 +11,5 @@ interface Connection : Cloneable {
     @Throws(IOException::class)
     fun get(uri: URI): WebSnapshot
 
-    override fun clone(): Connection
+    public override fun clone(): Connection
 }
