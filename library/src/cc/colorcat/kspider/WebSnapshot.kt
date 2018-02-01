@@ -9,6 +9,7 @@ import java.nio.charset.Charset
  */
 class WebSnapshot private constructor(val uri: URI, private val charset: Charset, val resource: String?) {
     companion object {
+        @JvmStatic
         fun newWebSnapshot(uri: URI, charset: Charset, resource: String? = null) = WebSnapshot(uri, charset, resource)
     }
 
