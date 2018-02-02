@@ -24,8 +24,6 @@ class KSpider private constructor(builder: Builder) : Call.Factory {
     val seedJar: SeedJar = builder.seedJar
     internal val dispatcher: Dispatcher = Dispatcher(this)
 
-    override fun newCall(seed: Seed): Call = RealCall(seed, this)
-
     fun start(tag: String, uri: String) {
         mapAndEnqueue(listOf(Seed.Companion.newSeed(tag, uri)))
     }
@@ -39,11 +37,7 @@ class KSpider private constructor(builder: Builder) : Call.Factory {
         mapAndEnqueue(seeds)
     }
 
-    fun startWithSeedJar() {
-        mapAndEnqueue(seedJar.load())
-    }
-
-    fun startWithSeedJar(seeds: List<Seed>) {
+    fun startWithSeedJar(seeds: List<Seed> = emptyList()) {
         val all = seeds + seedJar.load()
         mapAndEnqueue(all)
     }
@@ -52,6 +46,8 @@ class KSpider private constructor(builder: Builder) : Call.Factory {
         val calls = seeds.map { newCall(it) }
         dispatcher.enqueue(calls, depthFirst)
     }
+
+    override fun newCall(seed: Seed): Call = RealCall(seed, this)
 
     fun newBuilder(): Builder = Builder(this)
 
