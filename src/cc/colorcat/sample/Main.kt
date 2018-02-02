@@ -13,7 +13,7 @@ import java.io.File
  */
 val spider = KSpider.Builder()
         .registerParser("bing", BingParser())
-        .registerHandler("bing", BingHandler())
+        .registerHandler("bing", BingHandler(File("E:\\Spider")))
         .registerParser("image", HDWallpaperParser())
         .registerParser("image", ZhuoKuParser())
         .registerHandler("image", ImageHandler(File("E:\\Spider")))

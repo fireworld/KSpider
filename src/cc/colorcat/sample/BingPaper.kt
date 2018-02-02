@@ -27,7 +27,7 @@ class BingParser : Parser {
     }
 }
 
-class BingHandler : Handler {
+class BingHandler(private val saveDirectory: File) : Handler {
     override fun handle(scrap: Scrap): Boolean {
         val data = scrap.data
         val url = data["url"]
@@ -41,9 +41,9 @@ class BingHandler : Handler {
             } else {
                 System.nanoTime().toString() + ".jpg"
             }
-            val saveDir = File("E:\\Spider", folderName)
+            val savePath = File(saveDirectory, folderName + File.pathSeparator + fileName)
             val headers = Headers.ofWithIgnoreNull(listOf("Host", "Referer"), listOf(URI.create(url).host, scrap.uri.toString()))
-            DownloadManager.download(url, File(saveDir, fileName), headers)
+            DownloadManager.download(url, savePath, headers)
             return true
         }
         return false
