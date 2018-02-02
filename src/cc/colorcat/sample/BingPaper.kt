@@ -3,8 +3,8 @@ package cc.colorcat.sample
 import cc.colorcat.kspider.*
 import cc.colorcat.netbird4.Headers
 import org.jsoup.Jsoup
-import java.io.File
 import java.net.URI
+import java.nio.file.Paths
 
 /**
  * "bing.ioliu.cn"
@@ -27,7 +27,7 @@ class BingParser : Parser {
     }
 }
 
-class BingHandler(private val saveDirectory: File) : Handler {
+class BingHandler(private val saveDirectory: String) : Handler {
     override fun handle(scrap: Scrap): Boolean {
         val data = scrap.data
         val url = data["url"]
@@ -41,7 +41,7 @@ class BingHandler(private val saveDirectory: File) : Handler {
             } else {
                 System.nanoTime().toString() + ".jpg"
             }
-            val savePath = File(saveDirectory, folderName + File.pathSeparator + fileName)
+            val savePath = Paths.get(saveDirectory, folderName, fileName).toFile()
             val headers = Headers.ofWithIgnoreNull(listOf("Host", "Referer"), listOf(URI.create(url).host, scrap.uri.toString()))
             DownloadManager.download(url, savePath, headers)
             return true

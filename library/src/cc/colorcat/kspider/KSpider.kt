@@ -25,11 +25,17 @@ class KSpider private constructor(builder: Builder) : Call.Factory {
     internal val dispatcher: Dispatcher = Dispatcher(this)
 
     fun start(tag: String, uri: String) {
-        mapAndEnqueue(listOf(Seed.Companion.newSeed(tag, uri)))
+        mapAndEnqueue(listOf(Seed.newSeed(tag, uri)))
     }
 
     fun start(tag: String, uris: List<String>, defaultData: Map<String, String> = emptyMap()) {
         val seeds = Seed.newSeeds(tag, uris, 0, defaultData)
+        mapAndEnqueue(seeds)
+    }
+
+    fun start(tagAndUris: Map<String, List<String>>, defaultData: Map<String, String> = emptyMap()) {
+        val seeds = mutableListOf<Seed>()
+        tagAndUris.forEach { tag, uris -> seeds.addAll(Seed.newSeeds(tag, uris, 0, defaultData)) }
         mapAndEnqueue(seeds)
     }
 

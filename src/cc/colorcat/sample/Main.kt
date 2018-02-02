@@ -5,7 +5,6 @@ import cc.colorcat.kspider.KSpider
 import cc.colorcat.kspider.Scrap
 import cc.colorcat.kspider.Seed
 import cc.colorcat.kspider.internal.Log
-import java.io.File
 
 /**
  * Created by cxx on 2018/2/2.
@@ -13,10 +12,10 @@ import java.io.File
  */
 val spider = KSpider.Builder()
         .registerParser("bing", BingParser())
-        .registerHandler("bing", BingHandler(File("E:\\Spider")))
+        .registerHandler("bing", BingHandler("E:\\Spider"))
         .registerParser("image", HDWallpaperParser())
         .registerParser("image", ZhuoKuParser())
-        .registerHandler("image", ImageHandler(File("E:\\Spider")))
+        .registerHandler("image", ImageHandler("E:\\Spider"))
         .eventListener(object : EventListener {
             override fun onSuccess(seed: Seed) {
             }
@@ -31,10 +30,14 @@ val spider = KSpider.Builder()
                 Log.d("KSpider", "handled, scrap = $scrap")
             }
         })
-        .maxDepth(10)
+        .maxDepth(3)
         .build()
 
 
 fun main(args: Array<String>) {
-    spider.start("image", "http://www.zhuoku.com/zhuomianbizhi/jing-car/20180112160924(1).htm#turn")
+    val tagAndUris: Map<String, List<String>> = mapOf(
+            "bing" to listOf("https://bing.ioliu.cn/"),
+            "image" to listOf("http://www.zhuoku.com/zhuomianbizhi/jing-car/20180126214429(1).htm#turn", "https://www.hdwallpapers.in/")
+    )
+    spider.start(tagAndUris)
 }

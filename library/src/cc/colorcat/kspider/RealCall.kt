@@ -50,4 +50,23 @@ internal class RealCall(override val seed: Seed, private val spider: KSpider) : 
         val chain = RealInterceptorChain(seed, spider.connection, spider.parser, interceptors, 0)
         return chain.proceed(seed)
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as RealCall
+
+        if (seed != other.seed) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return seed.hashCode()
+    }
+
+    override fun toString(): String {
+        return "RealCall(seed=$seed, retryCount=$_retryCount)"
+    }
 }
