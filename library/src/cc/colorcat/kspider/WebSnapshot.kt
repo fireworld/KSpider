@@ -10,7 +10,7 @@ import java.util.*
  */
 class WebSnapshot private constructor(
         val uri: URI,
-        val content: ByteArray,
+        private val content: ByteArray,
         private val charset: Charset?
 ) {
     companion object {
@@ -18,11 +18,22 @@ class WebSnapshot private constructor(
         fun newWebSnapshot(uri: URI, content: ByteArray, charset: Charset?) = WebSnapshot(uri, content, charset)
     }
 
-    fun contentToString(): String = if (charset != null) String(content, charset) else String(content)
+    private lateinit var original: String
 
-    fun contentToString(charset: String): String = String(content, this.charset ?: Charset.forName(charset))
+    fun contentToString(): String {
+        if (!this::original.isInitialized) {
+            original = if (charset != null) String(content, charset) else String(content)
+        }
+        return original
+    }
 
-    fun contentToString(charset: Charset): String = String(content, this.charset ?: charset)
+    fun contentToString(ifAbsent: String): String = String(content, this.charset ?: Charset.forName(ifAbsent))
+
+    fun contentToString(ifAbsent: Charset): String = String(content, this.charset ?: ifAbsent)
+
+    fun contentToStringWith(force: String): String = String(content, Charset.forName(force))
+
+    fun contentToStringWith(force: Charset): String = String(content, force)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
