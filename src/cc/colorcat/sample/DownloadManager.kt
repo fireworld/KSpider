@@ -24,30 +24,35 @@ object DownloadManager {
             }
         }
     private val tasks = mutableMapOf<String, Int>()
+    private val emptyHeaders = Headers.ofWithIgnoreNull(emptyMap())
 
-    fun download(url: String, savePath: File, headers: Headers = Headers.ofWithIgnoreNull(emptyMap())) {
+    fun download(url: String, savePath: File, headers: Headers = emptyHeaders) {
         if (!tasks.containsKey(url)) {
             tasks[url] = 0
-            val request = MRequest.Builder<File>(FileParser.create(savePath))
-                    .url(url)
-                    .addHeaders(headers)
-                    .listener(object : MRequest.SimpleListener<File>() {
-                        override fun onSuccess(result: File) {
-                            Log.i("Download", "success, save path=$result")
-                        }
-
-                        override fun onFailure(code: Int, msg: String) {
-                            val count = tasks[url] as Int
-                            if (count < maxRetry) {
-                                tasks[url] = count + 1
-                                download(url, savePath)
-                            } else {
-                                Log.e("Download", "download failed, code=$code, msg=$msg, url=$url")
-                            }
-                        }
-                    })
-                    .build()
-            netBird.send(request)
+            realDownload(url, savePath, headers)
         }
+    }
+
+    private fun realDownload(url: String, savePath: File, headers: Headers) {
+        val request = MRequest.Builder<File>(FileParser.create(savePath))
+                .url(url)
+                .addHeaders(headers)
+                .listener(object : MRequest.SimpleListener<File>() {
+                    override fun onSuccess(result: File) {
+                        Log.i("Download", "success, save path=$result")
+                    }
+
+                    override fun onFailure(code: Int, msg: String) {
+                        val count = tasks[url] as Int
+                        if (count < maxRetry) {
+                            tasks[url] = count + 1
+                            realDownload(url, savePath, headers)
+                        } else {
+                            Log.e("Download", "download failed, code=$code, msg=$msg, url=$url")
+                        }
+                    }
+                })
+                .build()
+        netBird.send(request)
     }
 }
