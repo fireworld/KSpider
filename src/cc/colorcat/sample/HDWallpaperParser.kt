@@ -11,11 +11,11 @@ import java.util.*
  * Created by cxx on 2018/2/2.
  * xx.ch@outlook.com
  */
-const val HD_HOST = "www.hdwallpapers.in"
+class HDWallpaperParser : Parser {
+    private val hdHost = "www.hdwallpapers.in"
 
-class HdParser : Parser {
     override fun parse(seed: Seed, snapshot: WebSnapshot): List<Scrap> {
-        if (HD_HOST == seed.uri.host) {
+        if (hdHost == seed.uri.host) {
             val scraps = LinkedList<Scrap>()
             val doc = Jsoup.parse(snapshot.contentToString(), seed.baseUrl())
 

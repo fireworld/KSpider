@@ -1,16 +1,16 @@
 package cc.colorcat.sample
 
 import cc.colorcat.kspider.*
+import cc.colorcat.netbird4.Headers
 import org.jsoup.Jsoup
 import java.io.File
+import java.net.URI
 
 /**
+ * "bing.ioliu.cn"
  * Created by cxx on 2018/2/2.
  * xx.ch@outlook.com
  */
-const val TAG = "image"
-const val HOST = "bing.ioliu.cn"
-
 class BingParser : Parser {
     override fun parse(seed: Seed, snapshot: WebSnapshot): List<Scrap> {
         val scraps = mutableListOf<Scrap>()
@@ -41,10 +41,9 @@ class BingHandler : Handler {
             } else {
                 System.nanoTime().toString() + ".jpg"
             }
-            val saveDir = File("D:\\KSpider", folderName)
-            if (saveDir.exists() || saveDir.mkdirs()) {
-                DownloadManager.download(url, File(saveDir, fileName))
-            }
+            val saveDir = File("E:\\Spider", folderName)
+            val headers = Headers.ofWithIgnoreNull(listOf("Host", "Referer"), listOf(URI.create(url).host, scrap.uri.toString()))
+            DownloadManager.download(url, File(saveDir, fileName), headers)
             return true
         }
         return false

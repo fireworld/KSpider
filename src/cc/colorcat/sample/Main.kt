@@ -14,7 +14,8 @@ import java.io.File
 val spider = KSpider.Builder()
         .registerParser("bing", BingParser())
         .registerHandler("bing", BingHandler())
-        .registerParser("image", HdParser())
+        .registerParser("image", HDWallpaperParser())
+        .registerParser("image", ZhuoKuParser())
         .registerHandler("image", ImageHandler(File("E:\\Spider")))
         .eventListener(object : EventListener {
             override fun onSuccess(seed: Seed) {
@@ -35,5 +36,5 @@ val spider = KSpider.Builder()
 
 
 fun main(args: Array<String>) {
-    spider.start("image", "https://www.hdwallpapers.in/")
+    spider.start("image", "http://www.zhuoku.com/zhuomianbizhi/jing-car/20180112160924(1).htm#turn")
 }

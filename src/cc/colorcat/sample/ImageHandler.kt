@@ -16,19 +16,13 @@ class ImageHandler(private val saveDirectory: File) : Handler {
     override fun handle(scrap: Scrap): Boolean {
         val targetUrl = scrap.data["url"]
         if (targetUrl != null && imgReg.matches(targetUrl)) {
-            val folderName = scrap.data["dir"]
+            val folderName = scrap.data["dir"] ?: "Image"
             val fileName = targetUrl.substring(targetUrl.lastIndexOf('/') + 1)
-            val savePath = createSavePath(folderName, fileName)
+            val savePath = File(saveDirectory, folderName + File.pathSeparator + fileName)
             val headers = Headers.ofWithIgnoreNull(listOf("Host", "Referer"), listOf(URI.create(targetUrl).host, scrap.uri.toString()))
             DownloadManager.download(targetUrl, savePath, headers)
             return true
         }
         return false
-    }
-
-    private fun createSavePath(folderName: String?, fileName: String): File {
-        val saveDir = if (folderName != null) File(saveDirectory, folderName) else saveDirectory
-        saveDir.exists() || saveDir.mkdirs()
-        return File(saveDir, fileName)
     }
 }
