@@ -27,11 +27,12 @@ class WebSnapshot private constructor(
         return original
     }
 
-    fun contentToString(ifAbsent: String): String = String(content, this.charset ?: Charset.forName(ifAbsent))
+    fun contentToString(charsetIfAbsent: String): String =
+            String(content, this.charset ?: Charset.forName(charsetIfAbsent))
 
     fun contentToString(ifAbsent: Charset): String = String(content, this.charset ?: ifAbsent)
 
-    fun contentToStringWith(force: String): String = String(content, Charset.forName(force))
+    fun contentToStringWith(charsetForce: String): String = String(content, Charset.forName(charsetForce))
 
     fun contentToStringWith(force: Charset): String = String(content, force)
 
