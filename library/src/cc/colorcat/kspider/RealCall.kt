@@ -1,5 +1,6 @@
 package cc.colorcat.kspider
 
+import cc.colorcat.kspider.internal.Log
 import cc.colorcat.kspider.internal.mutableListWith
 import java.io.IOException
 
@@ -28,6 +29,7 @@ internal class RealCall(override val seed: Seed, private val spider: KSpider) : 
             }
         } catch (e: Throwable) {
             reason = e
+            Log.e(e)
         } finally {
             spider.dispatcher.finished(this, reason)
         }

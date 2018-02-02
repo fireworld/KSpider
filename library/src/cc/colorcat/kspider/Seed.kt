@@ -1,5 +1,6 @@
 package cc.colorcat.kspider
 
+import cc.colorcat.kspider.internal.Log
 import com.sun.deploy.util.URLUtil
 import java.net.MalformedURLException
 import java.net.URI
@@ -8,7 +9,7 @@ import java.net.URI
  * Created by cxx on 18-1-31.
  * xx.ch@outlook.com
  */
-open class Seed private constructor(
+open class Seed internal constructor(
         val tag: String,
         val uri: URI,
         val depth: Int,
@@ -22,9 +23,6 @@ open class Seed private constructor(
 
         @JvmStatic
         fun newSeed(tag: String, uri: String, depth: Int = 0, data: Map<String, String> = emptyMap()) = Seed(tag, URI.create(uri), depth, data)
-
-        @JvmStatic
-        fun newSeed(tag: String, uri: URI, depth: Int = 0, data: Map<String, String> = emptyMap()) = Seed(tag, uri, depth, data)
     }
 
     private val _data: MutableMap<String, String> = HashMap(data)
@@ -32,12 +30,18 @@ open class Seed private constructor(
     val data
         get() = _data.toMap()
 
+    fun baseUrl(): String = try {
+        URLUtil.getBase(uri.toURL()).toString()
+    } catch (e: MalformedURLException) {
+        Log.e(e)
+        uri.toString()
+    }
+
     fun newUriWithJoin(uri: String): String = this.uri.resolve(uri).toString()
 
-    fun baseUrl(): String = try {
-        URLUtil.getBase(this.uri.toURL()).toString()
-    } catch (e: MalformedURLException) {
-        this.uri.toString()
+    open fun fill(key: String, value: String): Seed {
+        _data[key] = value
+        return this
     }
 
     open fun fill(data: Map<String, String>): Seed {
@@ -45,8 +49,8 @@ open class Seed private constructor(
         return this
     }
 
-    open fun fill(key: String, value: String): Seed {
-        _data[key] = value
+    open fun fillIfAbsent(key: String, value: String): Seed {
+        _data.putIfAbsent(key, value)
         return this
     }
 
@@ -57,24 +61,15 @@ open class Seed private constructor(
         return this
     }
 
-    open fun fillIfAbsent(key: String, value: String): Seed {
-        _data.putIfAbsent(key, value)
-        return this
-    }
-
     fun newSeedWithResetDepth(): Seed = Seed(tag, uri, 0, _data)
 
     fun newScrapWithFill(key: String, value: String): Scrap = Scrap(tag, uri, depth + 1, _data).fill(key, value)
 
     fun newScrapWithFill(data: Map<String, String>): Scrap = Scrap(tag, uri, depth + 1, _data).fill(data)
 
-    fun newScrap(uri: String): Scrap = newScrap(URI.create(uri))
+    fun newScrapWithJoin(uri: String): Scrap = Scrap(tag, this.uri.resolve(uri), depth + 1, _data)
 
-    fun newScrap(uri: URI): Scrap = Scrap(tag, uri, depth + 1, _data)
-
-    fun newScrapWithJoin(uri: String): Scrap = newScrapWithJoin(URI.create(uri))
-
-    fun newScrapWithJoin(uri: URI): Scrap = Scrap(tag, this.uri.resolve(uri), depth + 1, _data)
+    fun newScrap(uri: String): Scrap = Scrap(tag, URI.create(uri), depth + 1, _data)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

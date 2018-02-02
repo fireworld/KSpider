@@ -4,8 +4,10 @@ import cc.colorcat.kspider.EventListener
 import cc.colorcat.kspider.Scrap
 import cc.colorcat.kspider.Seed
 import cc.colorcat.kspider.SeedJar
+import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.IOException
+import java.io.InputStream
 import java.net.URI
 import java.nio.charset.Charset
 import java.util.*
@@ -88,13 +90,12 @@ internal fun close(closeable: Closeable?) {
     }
 }
 
-internal fun parseCharset(contentType: String?, charsetIfAbsent: Charset): Charset {
+internal fun parseCharset(contentType: String?): Charset? {
     return contentType
             ?.split(";")
             ?.map { it.trim().split("=") }
             ?.filter { it.size == 2 && "charset".equals(it[0], true) }
             ?.let { if (it.isEmpty()) null else Charset.forName(it[0][1]) }
-            ?: charsetIfAbsent
 }
 
 internal fun isHttpUrl(uri: URI): Boolean {
@@ -102,3 +103,14 @@ internal fun isHttpUrl(uri: URI): Boolean {
     return scheme != null && scheme.toLowerCase().matches("(http)(s)?".toRegex())
 }
 
+internal fun InputStream.readByteArray(): ByteArray {
+    val output = ByteArrayOutputStream()
+    val buffer = ByteArray(2048)
+    var length = this.read(buffer)
+    while (length != -1) {
+        output.write(buffer, 0, length)
+        length = this.read(buffer)
+    }
+    output.flush()
+    return output.toByteArray()
+}

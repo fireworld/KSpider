@@ -8,10 +8,10 @@ import java.util.concurrent.ExecutorService
  * xx.ch@outlook.com
  */
 class KSpider private constructor(builder: Builder) : Call.Factory {
+    val parsers: Map<String, List<Parser>> = builder.parsers
+    internal val parser: Parser = ParserProxy(parsers)
     val handlers: Map<String, List<Handler>> = builder.handlers
     val interceptors: List<Interceptor> = builder.interceptors
-    val parsers: List<Parser> = builder.parsers
-    internal val parser: Parser = ParserProxy(parsers)
     private val _connection: Connection = builder.connection
     val connection: Connection
         get() = _connection.clone()
@@ -53,15 +53,15 @@ class KSpider private constructor(builder: Builder) : Call.Factory {
 
 
     class Builder {
+        private val _parsers: MutableMap<String, MutableList<Parser>>
         private val _handlers: MutableMap<String, MutableList<Handler>>
         private val _interceptors: MutableList<Interceptor>
-        private val _parsers: MutableList<Parser>
+        val parsers: Map<String, List<Parser>>
+            get() = _parsers.toImmutableMap()
         val handlers: Map<String, List<Handler>>
             get() = _handlers.toImmutableMap()
         val interceptors: List<Interceptor>
             get() = _interceptors.toImmutableList()
-        val parsers: List<Parser>
-            get() = _parsers.toImmutableList()
         var connection: Connection
             private set
         var executor: ExecutorService
@@ -80,10 +80,10 @@ class KSpider private constructor(builder: Builder) : Call.Factory {
             private set
 
         constructor() {
+            _parsers = mutableMapOf()
             _handlers = mutableMapOf()
             _interceptors = mutableListOf()
-            _parsers = mutableListOf()
-            connection = HttpConnection(Charsets.UTF_8)
+            connection = HttpConnection()
             executor = defaultService()
             depthFirst = false
             maxRetry = 3
@@ -94,9 +94,9 @@ class KSpider private constructor(builder: Builder) : Call.Factory {
         }
 
         internal constructor(spider: KSpider) {
+            _parsers = spider.parsers.toMutableMap()
             _handlers = spider.handlers.toMutableMap()
             _interceptors = spider.interceptors.toMutableList()
-            _parsers = spider.parsers.toMutableList()
             connection = spider._connection
             executor = spider.executor
             depthFirst = spider.depthFirst
@@ -107,12 +107,22 @@ class KSpider private constructor(builder: Builder) : Call.Factory {
             seedJar = spider.seedJar
         }
 
+        fun registerParser(tag: String, parser: Parser): Builder {
+            _parsers.computeIfAbsent(tag) { mutableListOf() }.addIfAbsent(parser)
+            return this
+        }
+
+        fun unregisterParser(tag: String, parser: Parser): Builder {
+            this._parsers[tag]?.remove(parser)
+            return this
+        }
+
         fun registerHandler(tag: String, handler: Handler): Builder {
             _handlers.computeIfAbsent(tag) { mutableListOf() }.addIfAbsent(handler)
             return this
         }
 
-        fun removeHandler(tag: String, handler: Handler): Builder {
+        fun unregisterHandler(tag: String, handler: Handler): Builder {
             this._handlers[tag]?.remove(handler)
             return this
         }
@@ -124,16 +134,6 @@ class KSpider private constructor(builder: Builder) : Call.Factory {
 
         fun removeInterceptor(interceptor: Interceptor): Builder {
             this._interceptors.remove(interceptor)
-            return this
-        }
-
-        fun addParser(parser: Parser): Builder {
-            this._parsers.addIfAbsent(parser)
-            return this
-        }
-
-        fun removeParser(parser: Parser): Builder {
-            this._parsers.remove(parser)
             return this
         }
 
@@ -182,6 +182,4 @@ class KSpider private constructor(builder: Builder) : Call.Factory {
 
         fun build(): KSpider = KSpider(this)
     }
-
-
 }

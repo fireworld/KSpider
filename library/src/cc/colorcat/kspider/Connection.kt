@@ -9,7 +9,7 @@ import java.net.URI
  */
 interface Connection : Cloneable {
     @Throws(IOException::class)
-    fun get(uri: URI): WebSnapshot
+    fun get(uri: URI): WebSnapshot?
 
     public override fun clone(): Connection
 }

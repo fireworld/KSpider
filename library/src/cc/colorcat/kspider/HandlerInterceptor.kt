@@ -7,7 +7,7 @@ package cc.colorcat.kspider
 internal class HandlerInterceptor(private val spider: KSpider) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): List<Scrap> {
-        val scraps = chain.proceed(chain.seed).toMutableList()
+        val scraps = chain.proceed(chain.seed).let { it as? MutableList ?: it.toMutableList() }
         scraps.removeIf { scrap ->
             if (scrap.data.isEmpty()) {
                 false

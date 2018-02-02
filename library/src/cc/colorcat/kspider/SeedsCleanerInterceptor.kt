@@ -7,23 +7,15 @@ package cc.colorcat.kspider
 internal class SeedsCleanerInterceptor(private val spider: KSpider) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): List<Scrap> {
-        val scraps = chain.proceed(chain.seed).toMutableList()
+        val scraps = chain.proceed(chain.seed).let { it as? MutableList ?: it.toMutableList() }
         scraps.removeIf {
-            if (it.depth > spider.maxDepth) {
+            if (it.depth >= spider.maxDepth) {
                 spider.dispatcher.onReachedMaxDepth(it)
                 true
             } else {
                 false
             }
         }
-//        val iterator = scraps.iterator()
-//        while (iterator.hasNext()) {
-//            val scrap = iterator.next()
-//            if (scrap.depth > spider.maxDepth) {
-//                iterator.remove()
-//                spider.dispatcher.onReachedMaxDepth(scrap)
-//            }
-//        }
         return scraps
     }
 }

@@ -9,6 +9,6 @@ internal class ConnectionInterceptor : Interceptor {
     override fun intercept(chain: Interceptor.Chain): List<Scrap> {
         val seed = chain.seed
         val snapshot = chain.connection.get(seed.uri)
-        return chain.parser.parse(seed, snapshot)
+        return if (snapshot != null) chain.parser.parse(seed, snapshot) else emptyList()
     }
 }

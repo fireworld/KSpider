@@ -35,7 +35,7 @@ internal class Dispatcher(private val spider: KSpider) {
                 running.add(call)
                 spider.executor.submit(call)
                 iterator.remove()
-                if (running.size >= spider.maxSeedOnRunning) break
+                if (running.size >= spider.maxSeedOnRunning) return
             }
         } else if (running.isEmpty()) {
             onAllFinished()
