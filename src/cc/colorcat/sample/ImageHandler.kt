@@ -19,7 +19,10 @@ class ImageHandler(private val saveDirectory: String) : Handler {
             val folderName = scrap.data["dir"] ?: "Image"
             val fileName = targetUrl.substring(targetUrl.lastIndexOf('/') + 1)
             val savePath = Paths.get(saveDirectory, folderName, fileName).toFile()
-            val headers = Headers.ofWithIgnoreNull(listOf("Host", "Referer"), listOf(URI.create(targetUrl).host, scrap.uri.toString()))
+            val headers = Headers.ofWithIgnoreNull(
+                    listOf("Host", "Referer", UserAgent.NAME),
+                    listOf(URI.create(targetUrl).host, scrap.uri.toString(), UserAgent.CHROME_MAC)
+            )
             DownloadManager.download(targetUrl, savePath, headers)
             return true
         }
