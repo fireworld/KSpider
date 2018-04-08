@@ -14,7 +14,9 @@ object Log {
         logger.useParentHandlers = false
         val formatter = object : Formatter() {
             @Synchronized
-            override fun format(record: LogRecord?): String = record?.message + '\n'
+            override fun format(record: LogRecord): String {
+                return "${record.level.name}  ${record.message}\n"
+            }
         }
         val level = Level.ALL
         val handler = ConsoleHandler()
